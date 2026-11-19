@@ -12,10 +12,11 @@ https://docs.google.com/spreadsheets/d/18fTd6PLLoRcOcRHrJGUKDBEap8xdbebqZFL95GoN
    python3 -m http.server 8000
    ```
    lalu buka `http://localhost:8000`.
-2. Ketik nama SPG pada kolom pencarian (mis. `Anita`, `Dede`, `Meitina`).
-3. Tiap kartu menampilkan **Grand Total**, **Target SPG**, **Gap**, persentase pencapaian target, dan progress bar.
-4. Klik kartu SPG untuk melihat rincian total per toko (Cust Code + nama toko).
-5. Tombol **↻ Refresh** untuk mengambil data terbaru secara manual.
+2. Saat dibuka, hanya kolom pencarian yang tampil. Ketik nama SPG (mis. `Anita`, `Dede`, `Meitina`) untuk mencari.
+3. Klik **Tampilkan Semua** (atau tombol **TAMPILKAN SEMUA SPG** di halaman awal) untuk melihat seluruh performa SPG. Klik lagi untuk kembali ke tampilan awal.
+4. Tiap kartu menampilkan **Grand Total**, **Target SPG**, **Gap**, persentase pencapaian target, dan progress bar.
+5. Tekan tombol **LIHAT TOKO** pada kartu SPG untuk membuka rincian pencapaian tiap toko (Cust Code + nama toko). Tombol berubah jadi **SEMBUNYIKAN TOKO** saat terbuka.
+6. Tombol **↻ Refresh** untuk mengambil data terbaru secara manual.
 
 ## Cara kerja data
 
@@ -28,10 +29,10 @@ https://docs.google.com/spreadsheets/d/18fTd6PLLoRcOcRHrJGUKDBEap8xdbebqZFL95GoN
   - `H` → total per toko
   - `I` → **Grand Total per SPG** (nilai di baris pertama tiap SPG). Jika kosong, total dihitung dari penjumlahan kolom `H`.
   - `J` → **Target SPG** (nilai di baris pertama tiap SPG).
-  - `K` → **Gap** (nilai di baris pertama tiap SPG, ditampilkan apa adanya). Rumus di sheet adalah `Gap = Target − Grand Total`, jadi **negatif = sudah melebihi target** (hijau), **positif = belum mencapai target** (merah).
-- Gap **tidak dihitung ulang** oleh webapp, mengikuti angka di sheet. Jadi jika ada baris yang tanda gap-nya tidak konsisten dengan `Target − Grand Total`, itu berasal dari sheet sumber (mis. saat ini `Atik Maryati`). Cek kembali rumus di sheet bila perlu.
+  - `K` → **Gap** (nilai di baris pertama tiap SPG). Rumus di sheet adalah `Gap = Target − Grand Total`. Angka ditampilkan **tanpa tanda +/−** (nilai mutlak); statusnya cukup dilihat dari warna: **hijau = sudah melebihi target**, **merah = belum mencapai target**.
+- Gap **tidak dihitung ulang** oleh webapp, mengikuti angka di sheet. Jadi jika ada baris yang arah warnanya tidak konsisten dengan `Target − Grand Total`, itu berasal dari sheet sumber (mis. saat ini `Atik Maryati`). Cek kembali rumus di sheet bila perlu.
 - Label tanggal diambil dari baris pertama sheet (saat ini: `19 Nov`).
-- Warna mengikuti tone logo Lezza: `#8E1D04`, `#C02105`, `#E2432A`, `#F08B71`, `#F7B7A4`, dengan teks `#4A1508`. Hijau `#2E7D4F` hanya dipakai sebagai penanda pencapaian/gap positif.
+- Warna mengikuti tone logo Lezza: `#8E1D04`, `#C02105`, `#E2432A`, `#F08B71`, `#F7B7A4`, dengan teks `#4A1508`. Hijau `#2E7D4F` hanya dipakai sebagai penanda "sudah achieve", merah `#C02105` untuk "belum achieve".
 - Jika Google Sheet belum bisa dijangkau (offline / izin berubah), app memakai **snapshot cadangan** yang ada di dalam file dan status berubah menjadi "Mode cadangan". Data langsung tetap diprioritaskan begitu tersedia.
 
 ## Deploy ke GitHub Pages (subdomain gratis `*.github.io`)

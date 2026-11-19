@@ -34,6 +34,11 @@
     font-size:13px;font-weight:700;color:var(--dark);white-space:nowrap}
   #refresh:hover{background:var(--pale);border-color:var(--coral)}
   #refresh:disabled{opacity:.55;cursor:default}
+  #showAll{border:1px solid var(--coral);background:#fff;border-radius:10px;padding:0 16px;
+    font-size:13px;font-weight:700;color:var(--dark);white-space:nowrap}
+  #showAll:hover{background:var(--pale)}
+  #showAll.active{background:var(--dark);border-color:var(--dark);color:#fff}
+  #showAll.active:hover{background:#6E1703}
   .meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px;font-size:12px}
   .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 10px;
     font-weight:700;background:#F4EEEA;color:var(--muted)}
@@ -57,6 +62,13 @@
   .small{font-size:12px;color:var(--muted);margin-top:4px}
   .pct{font-weight:800;color:var(--red)}
   .pct.good{color:var(--green)}
+  .store-btn{margin-top:8px;border:1px solid var(--coral);background:#fff;color:var(--dark);
+    border-radius:999px;padding:5px 11px;font-size:10px;font-weight:800;letter-spacing:.06em;
+    display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .store-btn:hover{background:var(--pale)}
+  .store-btn .mini{font-size:11px;line-height:1;transition:transform .18s}
+  .card.open .store-btn{background:var(--dark);border-color:var(--dark);color:#fff}
+  .card.open .store-btn .mini{transform:rotate(180deg)}
   .metrics{display:grid;grid-template-columns:repeat(3,minmax(104px,auto));gap:20px;flex:none}
   .metric{text-align:right}
   .metric .label{font-size:9px;letter-spacing:.11em;font-weight:800;color:#A9968E;margin-bottom:4px;white-space:nowrap}
@@ -80,6 +92,13 @@
   .empty{background:var(--card);border:1px dashed var(--coral);border-radius:14px;padding:42px 20px;
     text-align:center;color:var(--muted);font-size:14px}
   .empty strong{display:block;color:var(--dark);font-size:15px;margin-bottom:6px}
+  .prompt{background:var(--card);border:1px dashed var(--coral);border-radius:14px;
+    padding:48px 20px;text-align:center}
+  .prompt h2{margin:0 0 8px;font-size:17px;color:var(--dark)}
+  .prompt p{margin:0 0 18px;font-size:13px;color:var(--muted);line-height:1.6}
+  .prompt button{border:0;border-radius:999px;background:var(--red);color:#fff;
+    padding:11px 22px;font-size:12px;font-weight:800;letter-spacing:.04em}
+  .prompt button:hover{background:var(--dark)}
   footer{margin-top:26px;text-align:center;font-size:11.5px;color:#A9968E;line-height:1.6}
   @media(max-width:760px){
     .wrap{padding:28px 16px 56px}
@@ -133,6 +152,7 @@
         </svg>
         <input id="q" type="search" placeholder="Contoh: Anita, Dede, Meitina…" autocomplete="off" spellcheck="false">
       </label>
+      <button id="showAll" type="button">Tampilkan Semua</button>
       <button id="refresh" type="button">↻ Refresh</button>
     </div>
     <div class="meta">
@@ -145,8 +165,8 @@
   <section id="results" class="results" aria-live="polite"></section>
 
   <footer>
-    Sumber: sheet “Performa SPG” · Gap = Target − Grand Total (negatif = sudah melebihi target, positif = belum mencapai target).<br>
-    Klik nama SPG untuk melihat rincian per toko.
+    Sumber: sheet “Performa SPG” · Warna Gap: hijau = sudah melebihi target, merah = belum mencapai target (nilai tanpa tanda).<br>
+    Tekan <strong>LIHAT TOKO</strong> pada kartu SPG untuk melihat pencapaian tiap toko.
   </footer>
 </main>
 
@@ -163,12 +183,14 @@
 
   var $ = function(id){ return document.getElementById(id); };
   var qInput = $('q'), results = $('results'), statusEl = $('status'),
-      updateEl = $('update'), summaryEl = $('summary'), refreshBtn = $('refresh');
+      updateEl = $('update'), summaryEl = $('summary'), refreshBtn = $('refresh'),
+      showAllBtn = $('showAll');
 
   var data = normalize(SNAPSHOT);
   var updateLabel = '19 Nov';
   var lastFetch = 0;
   var loading = false;
+  var showAll = false;
 
   function normalize(rows){
     return rows.map(function(x){
@@ -308,8 +330,7 @@
   function fmt(n){ return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(n)); }
   function fmtGap(n){
     if (n == null) return '–';
-    var sign = n > 0 ? '+' : (n < 0 ? '-' : '');
-    return sign + 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(Math.abs(n)));
+    return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(Math.abs(n)));
   }
   function initials(name){
     return name.split(/\s+/).slice(0, 2).map(function(w){ return w.charAt(0); }).join('').toUpperCase();
@@ -325,10 +346,25 @@
   function render(){
     var raw = qInput.value;
     var needle = norm(raw);
-    var list = data.filter(function(x){ return norm(x.name).indexOf(needle) !== -1; });
+    var hasQuery = needle !== '';
+
+    showAllBtn.classList.toggle('active', showAll);
+    showAllBtn.textContent = showAll ? 'Sembunyikan Semua' : 'Tampilkan Semua';
+    updateEl.textContent = 'Update sheet: ' + (updateLabel || '–');
+
+    if (!hasQuery && !showAll){
+      summaryEl.textContent = data.length + ' SPG tersedia';
+      results.innerHTML = '<div class="prompt"><h2>Cari performa SPG</h2>' +
+        '<p>Ketik nama SPG pada kolom pencarian,<br>atau tampilkan seluruh performa SPG sekaligus.</p>' +
+        '<button type="button" data-action="showall">TAMPILKAN SEMUA SPG</button></div>';
+      return;
+    }
+
+    var list = hasQuery
+      ? data.filter(function(x){ return norm(x.name).indexOf(needle) !== -1; })
+      : data.slice();
     list.sort(function(a, b){ return b.total - a.total || a.name.localeCompare(b.name); });
 
-    updateEl.textContent = 'Update sheet: ' + (updateLabel || '–');
     var combined = list.reduce(function(s, x){ return s + x.total; }, 0);
     var targetCombined = list.reduce(function(s, x){ return s + (x.target || 0); }, 0);
     summaryEl.textContent = list.length + ' SPG · total ' + fmt(combined) + ' · target ' + fmt(targetCombined);
@@ -338,30 +374,34 @@
       return;
     }
 
-    results.innerHTML = list.map(function(x){
+    results.innerHTML = list.map(function(x, i){
       var pct = x.target > 0 ? Math.round(x.total / x.target * 100) : null;
       var width = pct == null ? 0 : Math.min(100, Math.max(0, pct));
       var gapClass = x.gap == null ? 'zero' : (x.gap < 0 ? 'good' : (x.gap > 0 ? 'bad' : 'zero'));
+      var detailId = 'toko-' + i;
       var rows = x.details.map(function(d){
         return '<tr><td class="code">' + esc(d.code) + '</td><td>' + esc(d.store) +
                '</td><td class="num">' + fmt(d.amount) + '</td></tr>';
       }).join('');
       return '<article class="card">' +
-        '<button class="card-main" type="button" aria-expanded="false">' +
+        '<div class="card-main">' +
           '<div class="avatar">' + esc(initials(x.name)) + '</div>' +
           '<div class="who"><div class="name">' + highlight(x.name, raw) + '</div>' +
           '<div class="small">' + x.details.length + ' toko' +
           (pct == null ? '' : ' · <span class="pct' + (pct >= 100 ? ' good' : '') + '">' + pct + '% dari target</span>') +
-          '</div></div>' +
+          '</div>' +
+          '<button class="store-btn" type="button" aria-expanded="false" aria-controls="' + detailId + '">' +
+          'LIHAT TOKO <span class="mini">▾</span></button>' +
+          '</div>' +
           '<div class="metrics">' +
             '<div class="metric primary"><div class="label">GRAND TOTAL</div><div class="amount">' + fmt(x.total) + '</div></div>' +
             '<div class="metric"><div class="label">TARGET SPG</div><div class="amount">' + (x.target ? fmt(x.target) : '–') + '</div></div>' +
             '<div class="metric"><div class="label">GAP</div><div class="amount gap ' + gapClass + '">' + fmtGap(x.gap) + '</div></div>' +
           '</div>' +
           '<div class="chev">▾</div>' +
-        '</button>' +
+        '</div>' +
         (pct == null ? '' : '<div class="bar"><span class="' + (pct >= 100 ? 'full' : '') + '" style="width:' + width + '%"></span></div>') +
-        '<div class="detail" hidden><table><thead><tr><th>Cust Code</th><th>Toko</th>' +
+        '<div class="detail" id="' + detailId + '" hidden><table><thead><tr><th>Cust Code</th><th>Toko</th>' +
         '<th class="num">Total</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
       '</article>';
     }).join('');
@@ -369,14 +409,22 @@
 
   qInput.addEventListener('input', render);
   refreshBtn.addEventListener('click', loadSheet);
+  showAllBtn.addEventListener('click', function(){
+    if (showAll){ showAll = false; }
+    else { qInput.value = ''; showAll = true; }
+    render();
+  });
   results.addEventListener('click', function(e){
-    var btn = e.target.closest('.card-main');
+    var show = e.target.closest('[data-action="showall"]');
+    if (show){ qInput.value = ''; showAll = true; render(); return; }
+    var btn = e.target.closest('.store-btn');
     if (!btn) return;
-    var card = btn.parentNode;
+    var card = btn.closest('.card');
     var detail = card.querySelector('.detail');
     var open = card.classList.toggle('open');
     detail.hidden = !open;
     btn.setAttribute('aria-expanded', String(open));
+    btn.innerHTML = (open ? 'SEMBUNYIKAN TOKO' : 'LIHAT TOKO') + ' <span class="mini">▾</span>';
   });
   document.addEventListener('visibilitychange', function(){
     if (!document.hidden && Date.now() - lastFetch > REFRESH_MS) loadSheet();
