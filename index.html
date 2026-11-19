@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grand Total By SPG</title>
+<style>
+  :root{
+    --bg:#FCF8F5; --card:#FFFFFF;
+    --dark:#8E1D04; --red:#C02105; --mid:#E2432A; --coral:#F08B71; --pale:#F7B7A4;
+    --text:#4A1508; --muted:#7A6A64; --grid:#EADFD9; --cream:#FCF6EF;
+    --green:#2E7D4F; --green-soft:#E9F5EE;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1020px;margin:0 auto;padding:44px 20px 72px}
+  header{margin-bottom:24px}
+  .eyebrow{font-size:11px;letter-spacing:.16em;font-weight:800;color:var(--red);margin-bottom:8px}
+  h1{font-size:30px;line-height:1.2;margin:0 0 8px;letter-spacing:-.02em;color:var(--dark)}
+  .sub{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+  .panel{background:var(--card);border:1px solid var(--grid);border-radius:16px;padding:18px;
+    box-shadow:0 6px 24px rgba(142,29,4,.06);margin-bottom:18px}
+  .searchrow{display:flex;gap:10px}
+  .searchbox{flex:1;display:flex;align-items:center;gap:10px;border:1px solid var(--grid);
+    border-radius:10px;padding:0 14px;background:#fff;transition:border-color .15s,box-shadow .15s}
+  .searchbox:focus-within{border-color:var(--red);box-shadow:0 0 0 3px rgba(192,33,5,.12)}
+  .searchbox svg{flex:none;color:var(--coral)}
+  input{border:0;outline:0;width:100%;font-size:15px;padding:13px 0;color:var(--text);background:transparent}
+  input::placeholder{color:#A9968E}
+  button{font-family:inherit;cursor:pointer}
+  #refresh{border:1px solid var(--grid);background:var(--cream);border-radius:10px;padding:0 16px;
+    font-size:13px;font-weight:700;color:var(--dark);white-space:nowrap}
+  #refresh:hover{background:var(--pale);border-color:var(--coral)}
+  #refresh:disabled{opacity:.55;cursor:default}
+  .meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px;font-size:12px}
+  .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 10px;
+    font-weight:700;background:#F4EEEA;color:var(--muted)}
+  .badge::before{content:"";width:7px;height:7px;border-radius:50%;background:#B7A39A}
+  .badge.ok{background:#FDECE7;color:var(--dark)} .badge.ok::before{background:var(--red)}
+  .badge.warn{background:#FFF4E5;color:#9A3412} .badge.warn::before{background:#D97706}
+  .badge.loading{background:#FDECE7;color:var(--red)} .badge.loading::before{background:var(--mid)}
+  .badge.ghost{background:var(--cream);color:var(--muted);font-weight:600}
+  .badge.ghost::before{display:none}
+  .summary{margin-left:auto;color:var(--muted);font-weight:600}
+  .results{display:flex;flex-direction:column;gap:10px}
+  .card{background:var(--card);border:1px solid var(--grid);border-radius:14px;overflow:hidden;
+    box-shadow:0 2px 10px rgba(142,29,4,.04)}
+  .card-main{width:100%;display:flex;align-items:center;gap:14px;padding:15px 17px 13px;
+    background:none;border:0;text-align:left;color:inherit}
+  .card-main:hover{background:#FFFCFA}
+  .avatar{flex:none;width:44px;height:44px;border-radius:12px;background:var(--pale);
+    color:var(--dark);display:grid;place-items:center;font-size:13px;font-weight:800}
+  .who{min-width:0;flex:1}
+  .name{font-size:15px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--dark)}
+  .small{font-size:12px;color:var(--muted);margin-top:4px}
+  .pct{font-weight:800;color:var(--red)}
+  .pct.good{color:var(--green)}
+  .metrics{display:grid;grid-template-columns:repeat(3,minmax(104px,auto));gap:20px;flex:none}
+  .metric{text-align:right}
+  .metric .label{font-size:9px;letter-spacing:.11em;font-weight:800;color:#A9968E;margin-bottom:4px;white-space:nowrap}
+  .metric .amount{font-size:15px;font-weight:750;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .metric.primary .amount{font-size:17px;color:var(--dark)}
+  .gap.good{color:var(--green)} .gap.bad{color:var(--red)} .gap.zero{color:var(--muted)}
+  .chev{flex:none;color:var(--coral);font-size:13px;transition:transform .18s;margin-left:2px}
+  .card.open .chev{transform:rotate(180deg)}
+  .bar{height:4px;background:#F3E7E0;margin:0 17px 13px;border-radius:99px;overflow:hidden}
+  .bar > span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--dark),var(--mid))}
+  .bar > span.full{background:linear-gradient(90deg,var(--green),#5AA778)}
+  .card-main + .bar{margin-top:-2px}
+  mark{background:var(--pale);color:var(--dark);border-radius:3px;padding:0 1px}
+  .detail{border-top:1px solid var(--grid);background:#FFFBF8;padding:4px 17px 12px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:left;color:var(--muted);font-weight:700;padding:9px 8px 7px 0;border-bottom:1px solid var(--grid)}
+  td{padding:9px 8px 9px 0;border-bottom:1px solid #F4EBE6;vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  .code{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:700;color:var(--dark)}
+  .empty{background:var(--card);border:1px dashed var(--coral);border-radius:14px;padding:42px 20px;
+    text-align:center;color:var(--muted);font-size:14px}
+  .empty strong{display:block;color:var(--dark);font-size:15px;margin-bottom:6px}
+  footer{margin-top:26px;text-align:center;font-size:11.5px;color:#A9968E;line-height:1.6}
+  @media(max-width:760px){
+    .metrics{grid-template-columns:repeat(3,1fr);gap:8px;width:100%;order:3}
+    .card-main{flex-wrap:wrap} .who{flex:1} .chev{order:4}
+    .metric .amount{font-size:13px} .metric.primary .amount{font-size:14px}
+    .metric .label{font-size:8px}
+  }
+  @media(max-width:560px){
+    .wrap{padding:28px 14px 56px} h1{font-size:25px}
+    .searchrow{flex-direction:column} #refresh{padding:11px}
+    .summary{margin-left:0;width:100%} .avatar{display:none}
+    .detail{padding:4px 12px 12px} .code{display:none}
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <div class="eyebrow">DATA PENJUALAN</div>
+    <h1>Grand Total By SPG</h1>
+    <p class="sub">Cari berdasarkan <strong>Nama SPG</strong>. Data diambil otomatis dari Google Sheet &amp; diperbarui tiap menit.</p>
+  </header>
+
+  <section class="panel">
+    <div class="searchrow">
+      <label class="searchbox">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path>
+        </svg>
+        <input id="q" type="search" placeholder="Contoh: Anita, Dede, Meitina…" autocomplete="off" spellcheck="false">
+      </label>
+      <button id="refresh" type="button">↻ Refresh</button>
+    </div>
+    <div class="meta">
+      <span id="status" class="badge loading">Menghubungkan ke Google Sheet…</span>
+      <span id="update" class="badge ghost">Update sheet: –</span>
+      <span id="summary" class="summary"></span>
+    </div>
+  </section>
+
+  <section id="results" class="results" aria-live="polite"></section>
+
+  <footer>
+    Sumber: sheet “Performa SPG” · Gap = Target − Grand Total (negatif = sudah melebihi target, positif = belum mencapai target).<br>
+    Klik nama SPG untuk melihat rincian per toko.
+  </footer>
+</main>
+
+<script>
+(function(){
+  'use strict';
+
+  var SHEET_ID = '18fTd6PLLoRcOcRHrJGUKDBEap8xdbebqZFL95GoNO1I';
+  var SHEET_NAME = 'Performa SPG';
+  var REFRESH_MS = 60 * 1000; // ambil data ulang tiap 1 menit
+
+  // Data cadangan (snapshot awal) dipakai hanya jika Google Sheet belum bisa dijangkau.
+  var SNAPSHOT = [{"name":"Anita Mulya Audia","total":66065311,"target":31334307,"gap":-34731004,"details":[["CS001000118","HARI HARI CILEDUG MERUYA",15174011],["CS001000125","HARI HARI KALIDERES MERUYA",17508474],["CS004004813","HARI HARI BINTARO CINANGKA",33382826]]},{"name":"Asri Nurhasanah","total":0,"target":13880883,"gap":13880883,"details":[["CS004006752","JURAGAN FROZEN CINANGKA",0],["CS004008163","CENTRAL FROZEN FOOD CINANGKA",0],["JURAGAN-MRY-002","JURAGAN 2",0],["CS001000882","JURAGAN FROZEN",0]]},{"name":"Atik Maryati","total":9804503,"target":28785301,"gap":-18980798,"details":[["CS003001991","JAYA BERSAMA SUNTER",0],["CS003005986","Sumber Frozen Makmur SUNTER",4319577],["CS006003314","BAKUL BENTO NAROGONG",0],["CS006003511","TOKO SNACK CORNER NAROGONG",3296515],["CS003006134","Aura Segar",2188411]]},{"name":"Dede Siti Rosita","total":57949433,"target":38182597,"gap":-19766836,"details":[["CS004005949","TIP TOP-DEPOK",3528180],["CS004008034","AEON TANJUNG BARAT CINANGKA",10544220],["CS006003357","HARI HARI BUARAN NAROGONG",41553445],["CS006002577","UD CEMERLANG FROZEN",2323588]]},{"name":"Evi Saipina","total":12749897,"target":0,"gap":-12749897,"details":[["CS003006580","FAJAR FROZEN SUNTER",12749897]]},{"name":"Fara Dewi","total":17779308,"target":38230340,"gap":20451032,"details":[["CS004004157","ANEKA BUANA CIREUNDEU CINANGKA 2",13296612],["CS004005504","PUJASARI",4482696],["CS004006726","KBU FROZEN CINANGKA",0]]},{"name":"Lian Tie","total":16983991,"target":53252230,"gap":36268239,"details":[["CS004003461","H&G FROZEN",2330431],["CS004006806","ABE FROZEN",8440140],["CS004008254","HAPPY HARVEST SUPERMARKET SERPONG",5705928],["CS001000112","TIP TOP CIMONE",507492]]},{"name":"Lucyana Madansyah","total":32703717,"target":52682615,"gap":19978898,"details":[["CS006003535","PT FAMAY GOTO SUKSES NAROGONG",32703717],["FAMAY-JABO-002","QUEEN MART FROZEN GUNUNG PUTRI",0]]},{"name":"Meitina Anggi Ardana","total":51573559,"target":43397618,"gap":-8175941,"details":[["CS006000111","TIP TOP PONDOK GEDE",4543164],["CS006000113","TIP TOP TAMBUN",4543164],["CS006000120","HARI HARI SWALAYAN BTC",16341243],["CS006000117","HARI HARI BEKASI CYBER PARK NAROGONG",26145988]]},{"name":"Nurhasanah","total":31659120,"target":64276082,"gap":32616962,"details":[["CS006002286","SATU JAYA FOOD FROZEN",0],["CS058001892","L FROZEN CIRACAS",9838013],["CS058004189","TERMINAL AL FROZEN CIRACAS",2513684],["CS058004240","KIRANA GROSIR 2 CIRACAS",2455723],["CS058002750","SATU JAYA FOOD FROZEN",13300810],["CS058008851","TOKO BOLU BY RAFA",3550890]]},{"name":"Shinta Ayu Susanti","total":12696203,"target":38714455,"gap":26018252,"details":[["CS004003024","NADA FROZEN",0],["CS004005948","TIP TOP CIPUTAT",5050656],["CS004008029","BROTHER MEAT SHOP",7645547],["CS004007087","RAHMA FROZEN",0]]},{"name":"Irma Pertiwi","total":32818979,"target":29661548,"gap":-3157431,"details":[["CS004008037","RED BOX CINANGKA",32818979]]},{"name":"Jayanti","total":44028544,"target":45085629,"gap":1057085,"details":[["CS004004817","HARI HARI DRAMAGA BOGOR CINANGKA",38051752],["CS004008035","AEON SENTUL CITY CINANGKA",5976792],["CS004008041","ARS FROZEN FOOD CINANGKA",0],["CS006000891","ARS FROZEN FOOD",0],["CS006003376","MS.FROZEN",0],["MS-FROZEN-001","TOKO MUDAH STORE",0]]},{"name":"Maya Muhayah","total":0,"target":28790558,"gap":28790558,"details":[["CS004006771","ANDI BAKSO CINANGKA",0],["CS004006803","BAROKAH FROZEN",0]]},{"name":"Novi Kartika Sari","total":15146221,"target":38127956,"gap":22981735,"details":[["CS004003641","ANEKA FROZEN BETUNG CINANGKA",15146221]]},{"name":"Nur Hikmah","total":23022739,"target":52876707,"gap":29853968,"details":[["CS004003174","Anto Frozen Lembang",23022739],["CS004007950","Anto Frozen Kebayoran",0],["CS004007960","Anto Frozen Anyar",0],["CS004007964","Anto Frozen Sepatan",0]]},{"name":"Sendy Martini","total":26641080,"target":78074480,"gap":51433400,"details":[["CS004004158","ANEKA BUANA FATMAWATI",26641080]]},{"name":"Sri Rahayu","total":19655103,"target":38447786,"gap":18792683,"details":[["CS004008231","Aneka Frozen Serang",19655103],["ANEKA-CNK-002","Aneka Frozen Ciracas",0],["ANEKA-CNK-003","Aneka Frozen Cilegon",0]]},{"name":"Sri Rahayu Setia Ningsih","total":11459417,"target":13351501,"gap":1892084,"details":[["BNK002","OBOS FROZEN FOOD",0],["CS001002163","BENNY MART PERUM",0],["CS004002759","TYRA FRESH",2844467],["CS004007863","LOUIS FROZEN CINANGKA",3496703],["CS004007887","AZKA FROZEN CINANGKA",433752],["CS004008061","BNR FROZEN CINANGKA",4684495],["CS004008103","TOKO YANG FROZEN CINANGKA",0]]},{"name":"Styani Nur Lestari","total":36477504,"target":41028165,"gap":4550661,"details":[["CS006000112","TIP TOP RAWAMANGUN",7056360],["CS006000368","AEON JAKARTA GARDEN CITY",11783700],["CS006003316","HAPPY HARVEST SUMMARECON MALL BEKASI NAROGONG",8322264],["CS006000110","TIP TOP PD.BAMBU",9315180]]},{"name":"Susiawati","total":30806412,"target":64678855,"gap":33872443,"details":[["CS004004747","FORTUNA SWALAYAN CINANGKA 1",30806412]]},{"name":"Tina Cahya Mentari","total":17929386,"target":35020426,"gap":17091040,"details":[["CS004002764","JAKA FROZEN",5724492],["CS004007304","KARIANA FROZEN",1652590],["CS004008038","KING FROZEN DURIAN CINANGKA",10552304]]}];
+
+  var $ = function(id){ return document.getElementById(id); };
+  var qInput = $('q'), results = $('results'), statusEl = $('status'),
+      updateEl = $('update'), summaryEl = $('summary'), refreshBtn = $('refresh');
+
+  var data = normalize(SNAPSHOT);
+  var updateLabel = '19 Nov';
+  var lastFetch = 0;
+  var loading = false;
+
+  function normalize(rows){
+    return rows.map(function(x){
+      return {
+        name: x.name,
+        total: Number(x.total) || 0,
+        target: Number(x.target) || 0,
+        gap: (x.gap == null ? null : Number(x.gap)),
+        details: (x.details || []).map(function(d){
+          return { code: d[0] || '', store: d[1] || '', amount: Number(d[2]) || 0 };
+        })
+      };
+    });
+  }
+
+  function toNum(v){
+    if (typeof v === 'number') return v;
+    return parseFloat(String(v == null ? '' : v).replace(/[^\d.-]/g, '')) || 0;
+  }
+
+  function parseResponse(res){
+    if (!res || res.status !== 'ok') throw new Error('Balasan sheet tidak valid');
+    var rows = (res.table && res.table.rows) || [];
+    function val(row, i){
+      var c = row && row.c && row.c[i];
+      if (!c) return '';
+      return c.v != null ? c.v : (c.f != null ? c.f : '');
+    }
+    var update = String(val(rows[0], 1) || '').trim();
+    var map = new Map();
+
+    rows.slice(2).forEach(function(row){
+      var name = String(val(row, 1) || '').trim().replace(/\s+/g, ' ');
+      if (!name || name.toLowerCase() === 'nama spg') return;
+      var d = map.get(name);
+      if (!d){
+        d = { name: name, total: 0, target: 0, gap: null, hasTotal: false, hasGap: false, details: [] };
+        map.set(name, d);
+      }
+      d.details.push({
+        code: String(val(row, 2) || '').trim(),
+        store: String(val(row, 3) || '').trim(),
+        amount: toNum(val(row, 7))
+      });
+      var gt = val(row, 8);
+      if (!d.hasTotal && gt !== '' && gt != null){ d.total = toNum(gt); d.hasTotal = true; }
+      var target = val(row, 9), gap = val(row, 10);
+      if (!d.hasGap && (target !== '' || gap !== '')){
+        d.target = toNum(target);
+        d.gap = (gap === '' || gap == null) ? null : toNum(gap);
+        d.hasGap = true;
+      }
+    });
+
+    var out = [];
+    map.forEach(function(d){
+      if (!d.hasTotal) d.total = d.details.reduce(function(s, x){ return s + x.amount; }, 0);
+      if (d.gap == null && d.hasGap) d.gap = d.target - d.total;
+      out.push(d);
+    });
+    if (!out.length) throw new Error('Sheet tidak berisi data SPG');
+    return { update: update, spg: out };
+  }
+
+  function setStatus(text, kind){
+    statusEl.textContent = text;
+    statusEl.className = 'badge' + (kind ? ' ' + kind : '');
+  }
+
+  function loadSheet(){
+    if (loading) return;
+    loading = true;
+    refreshBtn.disabled = true;
+    setStatus('Mengambil data terbaru…', 'loading');
+
+    var g = window.google = window.google || {};
+    g.visualization = g.visualization || {};
+    g.visualization.Query = g.visualization.Query || {};
+
+    var oldHandler = g.visualization.Query.setResponse;
+    var script = null, timer = null, done = false;
+
+    function cleanup(){
+      done = true;
+      loading = false;
+      refreshBtn.disabled = false;
+      if (timer) clearTimeout(timer);
+      if (script && script.parentNode) script.parentNode.removeChild(script);
+      g.visualization.Query.setResponse = oldHandler;
+      lastFetch = Date.now();
+    }
+    function fail(err){
+      setStatus('Mode cadangan · ' + (err && err.message ? err.message : 'gagal memuat'), 'warn');
+    }
+
+    g.visualization.Query.setResponse = function(res){
+      if (done) return;
+      try {
+        var parsed = parseResponse(res);
+        data = parsed.spg;
+        if (parsed.update) updateLabel = parsed.update;
+        setStatus('Data langsung dari Google Sheet', 'ok');
+        render();
+      } catch (e) {
+        fail(e);
+      } finally {
+        cleanup();
+      }
+    };
+
+    var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID +
+      '/gviz/tq?tqx=out:json&sheet=' + encodeURIComponent(SHEET_NAME) +
+      '&_=' + Date.now();
+
+    script = document.createElement('script');
+    script.src = url;
+    script.async = true;
+    script.onerror = function(){
+      if (done) return;
+      fail(new Error('tidak dapat menjangkau sheet'));
+      cleanup();
+    };
+    timer = setTimeout(function(){
+      if (done) return;
+      fail(new Error('waktu tunggu habis'));
+      cleanup();
+    }, 12000);
+    document.head.appendChild(script);
+  }
+
+  function norm(s){ return String(s || '').toLowerCase().trim(); }
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+  function fmt(n){ return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(n)); }
+  function fmtGap(n){
+    if (n == null) return '–';
+    var sign = n > 0 ? '+' : (n < 0 ? '-' : '');
+    return sign + 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(Math.abs(n)));
+  }
+  function initials(name){
+    return name.split(/\s+/).slice(0, 2).map(function(w){ return w.charAt(0); }).join('').toUpperCase();
+  }
+  function highlight(name, query){
+    var q = String(query || '').trim();
+    if (!q) return esc(name);
+    var i = name.toLowerCase().indexOf(q.toLowerCase());
+    if (i < 0) return esc(name);
+    return esc(name.slice(0, i)) + '<mark>' + esc(name.slice(i, i + q.length)) + '</mark>' + esc(name.slice(i + q.length));
+  }
+
+  function render(){
+    var raw = qInput.value;
+    var needle = norm(raw);
+    var list = data.filter(function(x){ return norm(x.name).indexOf(needle) !== -1; });
+    list.sort(function(a, b){ return b.total - a.total || a.name.localeCompare(b.name); });
+
+    updateEl.textContent = 'Update sheet: ' + (updateLabel || '–');
+    var combined = list.reduce(function(s, x){ return s + x.total; }, 0);
+    var targetCombined = list.reduce(function(s, x){ return s + (x.target || 0); }, 0);
+    summaryEl.textContent = list.length + ' SPG · total ' + fmt(combined) + ' · target ' + fmt(targetCombined);
+
+    if (!list.length){
+      results.innerHTML = '<div class="empty"><strong>Tidak ada SPG ditemukan</strong>Coba kata kunci lain, misalnya nama depan SPG.</div>';
+      return;
+    }
+
+    results.innerHTML = list.map(function(x){
+      var pct = x.target > 0 ? Math.round(x.total / x.target * 100) : null;
+      var width = pct == null ? 0 : Math.min(100, Math.max(0, pct));
+      var gapClass = x.gap == null ? 'zero' : (x.gap < 0 ? 'good' : (x.gap > 0 ? 'bad' : 'zero'));
+      var rows = x.details.map(function(d){
+        return '<tr><td class="code">' + esc(d.code) + '</td><td>' + esc(d.store) +
+               '</td><td class="num">' + fmt(d.amount) + '</td></tr>';
+      }).join('');
+      return '<article class="card">' +
+        '<button class="card-main" type="button" aria-expanded="false">' +
+          '<div class="avatar">' + esc(initials(x.name)) + '</div>' +
+          '<div class="who"><div class="name">' + highlight(x.name, raw) + '</div>' +
+          '<div class="small">' + x.details.length + ' toko' +
+          (pct == null ? '' : ' · <span class="pct' + (pct >= 100 ? ' good' : '') + '">' + pct + '% dari target</span>') +
+          '</div></div>' +
+          '<div class="metrics">' +
+            '<div class="metric primary"><div class="label">GRAND TOTAL</div><div class="amount">' + fmt(x.total) + '</div></div>' +
+            '<div class="metric"><div class="label">TARGET SPG</div><div class="amount">' + (x.target ? fmt(x.target) : '–') + '</div></div>' +
+            '<div class="metric"><div class="label">GAP</div><div class="amount gap ' + gapClass + '">' + fmtGap(x.gap) + '</div></div>' +
+          '</div>' +
+          '<div class="chev">▾</div>' +
+        '</button>' +
+        (pct == null ? '' : '<div class="bar"><span class="' + (pct >= 100 ? 'full' : '') + '" style="width:' + width + '%"></span></div>') +
+        '<div class="detail" hidden><table><thead><tr><th>Cust Code</th><th>Toko</th>' +
+        '<th class="num">Total</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+      '</article>';
+    }).join('');
+  }
+
+  qInput.addEventListener('input', render);
+  refreshBtn.addEventListener('click', loadSheet);
+  results.addEventListener('click', function(e){
+    var btn = e.target.closest('.card-main');
+    if (!btn) return;
+    var card = btn.parentNode;
+    var detail = card.querySelector('.detail');
+    var open = card.classList.toggle('open');
+    detail.hidden = !open;
+    btn.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('visibilitychange', function(){
+    if (!document.hidden && Date.now() - lastFetch > REFRESH_MS) loadSheet();
+  });
+
+  render();
+  loadSheet();
+  setInterval(loadSheet, REFRESH_MS);
+})();
+</script>
+</body>
+</html>
