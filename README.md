@@ -66,3 +66,4 @@ Subdomain gratis dari GitHub sudah otomatis, **tidak perlu membeli domain** dan 
 - Sheet harus tetap bisa diakses oleh siapa pun yang memiliki link (`Anyone with the link`) agar endpoint `gviz` bisa dibaca tanpa login.
 - File `index.html` bisa di-host di static hosting mana pun (GitHub Pages, Netlify, dll.) tanpa backend.
 - Webapp memakai JSONP ke `docs.google.com`, jadi tetap berfungsi walau di-host di submodule path `username.github.io/nama-repo/`.
+- Tampilan responsif untuk HP: **Grand Total** jadi satu baris penuh, **Target SPG** dan **Gap** dua kolom di bawahnya, dan tabel rincian menyembunyikan kolom Cust Code agar tidak mepet. Sudah dicek sampai lebar 320 px tanpa konten terpotong.

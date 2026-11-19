@@ -82,16 +82,38 @@
   .empty strong{display:block;color:var(--dark);font-size:15px;margin-bottom:6px}
   footer{margin-top:26px;text-align:center;font-size:11.5px;color:#A9968E;line-height:1.6}
   @media(max-width:760px){
-    .metrics{grid-template-columns:repeat(3,1fr);gap:8px;width:100%;order:3}
-    .card-main{flex-wrap:wrap} .who{flex:1} .chev{order:4}
-    .metric .amount{font-size:13px} .metric.primary .amount{font-size:14px}
-    .metric .label{font-size:8px}
+    .wrap{padding:28px 16px 56px}
+    .card-main{display:grid;grid-template-columns:auto 1fr auto;
+      grid-template-areas:"avatar who chev" "metrics metrics metrics";
+      gap:10px 12px;padding:14px 14px 12px}
+    .avatar{grid-area:avatar}
+    .who{grid-area:who}
+    .chev{grid-area:chev}
+    .metrics{grid-area:metrics;width:100%;grid-template-columns:1fr 1fr;gap:8px 14px;flex:none}
+    .metric{display:flex;flex-direction:column;align-items:flex-start;text-align:left}
+    .metric .label{margin-bottom:2px}
+    .metric.primary{grid-column:1/-1;flex-direction:row;justify-content:space-between;
+      align-items:baseline;padding-bottom:7px;border-bottom:1px dashed var(--grid)}
+    .metric .amount{font-size:13px} .metric.primary .amount{font-size:16px}
+    .bar{margin:0 14px 12px}
   }
   @media(max-width:560px){
-    .wrap{padding:28px 14px 56px} h1{font-size:25px}
-    .searchrow{flex-direction:column} #refresh{padding:11px}
-    .summary{margin-left:0;width:100%} .avatar{display:none}
-    .detail{padding:4px 12px 12px} .code{display:none}
+    .wrap{padding:20px 12px 48px}
+    h1{font-size:23px}
+    .sub{font-size:12.5px}
+    .panel{padding:14px;border-radius:14px}
+    .searchrow{gap:8px}
+    #refresh{padding:0 12px;font-size:12px}
+    .meta{gap:6px}
+    .badge{font-size:11px;padding:4px 8px}
+    .summary{margin-left:0;width:100%;font-size:11.5px}
+    .results{gap:8px}
+    .avatar{width:38px;height:38px;font-size:11px;border-radius:10px}
+    .name{font-size:14px} .small{font-size:11px}
+    .detail{padding:2px 12px 10px}
+    .detail th:first-child,.detail .code{display:none}
+    table{font-size:12px}
+    footer{padding:0 4px;font-size:10.5px}
   }
 </style>
 </head>
