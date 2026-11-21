@@ -67,7 +67,18 @@
   .small{font-size:12px;color:var(--muted);margin-top:4px}
   .pct{font-weight:800;color:var(--red)}
   .pct.good{color:var(--green)}
-  .store-btn{margin-top:8px;border:1px solid var(--coral);background:#fff;color:var(--dark);
+  .row-actions{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:8px}
+  .status-msg{border-radius:999px;padding:5px 10px;font-size:10.5px;font-weight:800;
+    white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+  .status-msg.kritis{background:#FDECE7;color:#8E1D04}
+  .status-msg.waspada{background:#FFF0E4;color:#9A3412}
+  .status-msg.kejar{background:#FFFBEB;color:#92400E}
+  .status-msg.cukup{background:#EFF6FF;color:#1D4ED8}
+  .status-msg.hampir{background:#E9F5EE;color:#2E7D4F}
+  .status-msg.sedikit{background:#DCFCE7;color:#166534}
+  .status-msg.hebat{background:#FFF3CF;color:#7A3B02}
+  .status-msg.none{background:#F4EEEA;color:var(--muted)}
+  .store-btn{border:1px solid var(--coral);background:#fff;color:var(--dark);
     border-radius:999px;padding:5px 11px;font-size:10px;font-weight:800;letter-spacing:.06em;
     display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
   .store-btn:hover{background:var(--pale)}
@@ -168,6 +179,19 @@
       <label>Region
         <select id="region"><option value="">Semua Region</option></select>
       </label>
+      <label>Pencapaian
+        <select id="pesan">
+          <option value="">Semua Pencapaian</option>
+          <option value="kritis">‼️ Kritis</option>
+          <option value="waspada">🟠 Waspada</option>
+          <option value="kejar">🟡 Kejar lagi</option>
+          <option value="cukup">🔵 Cukup Baik</option>
+          <option value="hampir">🟢 Hampir Tercapai</option>
+          <option value="sedikit">✅ Sedikit lagi</option>
+          <option value="hebat">🏆 Kerja bagus, luar biasa!</option>
+          <option value="none">⚪ Belum ada target</option>
+        </select>
+      </label>
       <label>Urutkan
         <select id="sort">
           <option value="pct-desc">Pencapaian tertinggi</option>
@@ -206,7 +230,7 @@
   var $ = function(id){ return document.getElementById(id); };
   var qInput = $('q'), results = $('results'), statusEl = $('status'),
       updateEl = $('update'), summaryEl = $('summary'), refreshBtn = $('refresh'),
-      regionSel = $('region'), sortSel = $('sort');
+      regionSel = $('region'), sortSel = $('sort'), pesanSel = $('pesan');
 
   var data = normalize(SNAPSHOT);
   var updateLabel = '19 Nov';
@@ -291,6 +315,17 @@
 
   function pctOf(x){
     return x.target > 0 ? Math.round(x.total / x.target * 100) : null;
+  }
+
+  function messageOf(pct){
+    if (pct == null) return { text: 'Belum ada target', cls: 'none' };
+    if (pct <= 20)  return { text: '‼️ Kritis', cls: 'kritis' };
+    if (pct <= 40)  return { text: '🟠 Waspada', cls: 'waspada' };
+    if (pct <= 60)  return { text: '🟡 Kejar lagi', cls: 'kejar' };
+    if (pct <= 80)  return { text: '🔵 Cukup Baik', cls: 'cukup' };
+    if (pct <= 90)  return { text: '🟢 Hampir Tercapai', cls: 'hampir' };
+    if (pct <= 100) return { text: '✅ Sedikit lagi', cls: 'sedikit' };
+    return { text: '🏆 Kerja bagus, luar biasa!', cls: 'hebat' };
   }
 
   function populateRegions(){
@@ -394,13 +429,14 @@
     var needle = norm(raw);
     var hasQuery = needle !== '';
     var region = regionSel.value;
+    var pesan = pesanSel.value;
 
     updateEl.textContent = 'Update sheet: ' + (updateLabel || '–');
 
     if (!hasQuery && !showAll){
       summaryEl.textContent = data.length + ' SPG tersedia';
       results.innerHTML = '<div class="prompt"><h2>Cari performa SPG</h2>' +
-        '<p>Ketik nama SPG, pilih Region, atau tampilkan seluruh performa SPG sekaligus.</p>' +
+        '<p>Ketik nama SPG, pilih Region atau Pencapaian, atau tampilkan seluruh performa SPG sekaligus.</p>' +
         '<button type="button" data-action="showall">TAMPILKAN SEMUA SPG</button></div>';
       return;
     }
@@ -409,6 +445,7 @@
       ? data.filter(function(x){ return norm(x.name).indexOf(needle) !== -1; })
       : data.slice();
     if (region) list = list.filter(function(x){ return x.region === region; });
+    if (pesan) list = list.filter(function(x){ return messageOf(pctOf(x)).cls === pesan; });
 
     var sort = sortSel.value;
     list.sort(function(a, b){
@@ -427,15 +464,17 @@
     var combined = list.reduce(function(s, x){ return s + x.total; }, 0);
     var targetCombined = list.reduce(function(s, x){ return s + (x.target || 0); }, 0);
     summaryEl.textContent = list.length + ' SPG' + (region ? ' · ' + region : '') +
+      (pesan ? ' · ' + pesanSel.options[pesanSel.selectedIndex].text : '') +
       ' · total ' + fmt(combined) + ' · target ' + fmt(targetCombined);
 
     if (!list.length){
-      results.innerHTML = '<div class="empty"><strong>Tidak ada SPG ditemukan</strong>Coba kata kunci lain, misalnya nama depan SPG.</div>';
+      results.innerHTML = '<div class="empty"><strong>Tidak ada SPG ditemukan</strong>Coba kata kunci, Region, atau Pencapaian lain.</div>';
       return;
     }
 
     results.innerHTML = list.map(function(x, i){
       var pct = pctOf(x);
+      var msg = messageOf(pct);
       var width = pct == null ? 0 : Math.min(100, Math.max(0, pct));
       var gapClass = x.gap == null ? 'zero' : (x.gap < 0 ? 'good' : (x.gap > 0 ? 'bad' : 'zero'));
       var detailId = 'toko-' + i;
@@ -450,8 +489,11 @@
           '<div class="small">' + esc(x.region) + ' · ' + x.details.length + ' toko' +
           (pct == null ? '' : ' · <span class="pct' + (pct >= 100 ? ' good' : '') + '">' + pct + '% dari target</span>') +
           '</div>' +
+          '<div class="row-actions">' +
+          '<span class="status-msg ' + msg.cls + '">' + msg.text + '</span>' +
           '<button class="store-btn" type="button" aria-expanded="false" aria-controls="' + detailId + '">' +
           'LIHAT TOKO <span class="mini">▾</span></button>' +
+          '</div>' +
           '</div>' +
           '<div class="metrics">' +
             '<div class="metric primary"><div class="label">GRAND TOTAL</div><div class="amount">' + fmt(x.total) + '</div></div>' +
@@ -477,6 +519,11 @@
     showAll = true;
     render();
   });
+  pesanSel.addEventListener('change', function(){
+    qInput.value = '';
+    showAll = true;
+    render();
+  });
   sortSel.addEventListener('change', function(){
     if (!qInput.value.trim() && !showAll) showAll = true;
     render();
@@ -486,6 +533,7 @@
     if (show){
       qInput.value = '';
       regionSel.value = '';
+      pesanSel.value = '';
       showAll = true;
       render();
       return;
