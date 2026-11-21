@@ -1,6 +1,6 @@
 # Grand Total By SPG
 
-Webapp satu file (tanpa instalasi, tanpa build) untuk mencari **Nama SPG** dan menampilkan **Grand Total**, **Target SPG**, dan **Gap**-nya. Menggunakan color tone merah/oranye Lezza. Sumber data: sheet **"Performa SPG"** dari Google Sheet:
+Webapp satu file (tanpa instalasi, tanpa build) untuk mencari **Nama SPG**, filter **Region**, mengurutkan berdasarkan **persentase pencapaian**, dan menampilkan **Grand Total**, **Target SPG**, serta **Gap**. Menggunakan color tone merah/oranye Lezza. Sumber data: sheet **"Performa SPG"** dari Google Sheet:
 
 https://docs.google.com/spreadsheets/d/18fTd6PLLoRcOcRHrJGUKDBEap8xdbebqZFL95GoNO1I/edit?usp=sharing
 
@@ -12,11 +12,13 @@ https://docs.google.com/spreadsheets/d/18fTd6PLLoRcOcRHrJGUKDBEap8xdbebqZFL95GoN
    python3 -m http.server 8000
    ```
    lalu buka `http://localhost:8000`.
-2. Saat dibuka, hanya kolom pencarian yang tampil. Ketik nama SPG (mis. `Anita`, `Dede`, `Meitina`) untuk mencari.
-3. Klik **Tampilkan Semua** (atau tombol **TAMPILKAN SEMUA SPG** di halaman awal) untuk melihat seluruh performa SPG. Klik lagi untuk kembali ke tampilan awal.
-4. Tiap kartu menampilkan **Grand Total**, **Target SPG**, **Gap**, persentase pencapaian target, dan progress bar.
-5. Tekan tombol **LIHAT TOKO** pada kartu SPG untuk membuka rincian pencapaian tiap toko (Cust Code + nama toko). Tombol berubah jadi **SEMBUNYIKAN TOKO** saat terbuka.
-6. Tombol **↻ Refresh** untuk mengambil data terbaru secara manual.
+2. Saat dibuka, hanya kolom pencarian (ukuran besar) yang tampil. Ketik nama SPG (mis. `Anita`, `Dede`, `Meitina`) untuk mencari.
+3. Satu-satunya tombol "tampilkan semua" ada di halaman awal: **TAMPILKAN SEMUA SPG**. Memilih Region atau mengubah Urutkan juga langsung menampilkan data. Mengosongkan kolom pencarian kembali ke tampilan awal.
+4. **Region**: pilih Jabodetabek, Bali, Jawa Barat, atau "Tanpa Region" (baris yang belum diberi region di sheet). Opsi **Semua Region** menampilkan semuanya.
+5. **Urutkan**: `Pencapaian tertinggi` (default), `Pencapaian terendah`, `Grand Total tertinggi`, atau `Nama A–Z`. Persentase dihitung `Grand Total / Target SPG × 100`; SPG tanpa target diletakkan di urutan terakhir untuk sortir pencapaian.
+6. Tiap kartu menampilkan region, **Grand Total**, **Target SPG**, **Gap**, persentase pencapaian, dan progress bar.
+7. Tekan tombol **LIHAT TOKO** pada kartu SPG untuk rincian pencapaian tiap toko. Tombol berubah jadi **SEMBUNYIKAN TOKO** saat terbuka.
+8. Tombol **↻ Refresh** untuk mengambil data terbaru secara manual.
 
 ## Cara kerja data
 
@@ -24,6 +26,7 @@ https://docs.google.com/spreadsheets/d/18fTd6PLLoRcOcRHrJGUKDBEap8xdbebqZFL95GoN
 - Pengambilan ulang otomatis **setiap 1 menit**, juga saat tab dibuka kembali setelah minimal 1 menit, dan lewat tombol Refresh. Jadi perubahan di sheet otomatis tampil dengan jeda maksimal ±1 menit tanpa mengubah kode.
 - Catatan: karena mengecek Google Sheets setiap menit, hindari membuka banyak tab sekaligus agar tidak kena pembatasan request Google. Interval bisa diubah lewat variabel `REFRESH_MS` di dalam `index.html` (satuan milidetik).
 - Kolom yang dipakai:
+  - `A` → **Region** (dipakai untuk filter; diambil dari baris pertama tiap SPG. Baris dengan region kosong ditampilkan sebagai "Tanpa Region")
   - `B` → **Nama SPG** (dipakai untuk pencarian & pengelompokan)
   - `C`, `D` → Cust Code & Toko (rincian)
   - `H` → total per toko
@@ -31,7 +34,7 @@ https://docs.google.com/spreadsheets/d/18fTd6PLLoRcOcRHrJGUKDBEap8xdbebqZFL95GoN
   - `J` → **Target SPG** (nilai di baris pertama tiap SPG).
   - `K` → **Gap** (nilai di baris pertama tiap SPG). Rumus di sheet adalah `Gap = Target − Grand Total`. Angka ditampilkan **tanpa tanda +/−** (nilai mutlak); statusnya cukup dilihat dari warna: **hijau = sudah melebihi target**, **merah = belum mencapai target**.
 - Gap **tidak dihitung ulang** oleh webapp, mengikuti angka di sheet. Jadi jika ada baris yang arah warnanya tidak konsisten dengan `Target − Grand Total`, itu berasal dari sheet sumber (mis. saat ini `Atik Maryati`). Cek kembali rumus di sheet bila perlu.
-- Label tanggal diambil dari baris pertama sheet (saat ini: `19 Nov`).
+- Label tanggal diambil dari baris pertama sheet (saat ini: `21 Nov`).
 - Warna mengikuti tone logo Lezza: `#8E1D04`, `#C02105`, `#E2432A`, `#F08B71`, `#F7B7A4`, dengan teks `#4A1508`. Hijau `#2E7D4F` hanya dipakai sebagai penanda "sudah achieve", merah `#C02105` untuk "belum achieve".
 - Jika Google Sheet belum bisa dijangkau (offline / izin berubah), app memakai **snapshot cadangan** yang ada di dalam file dan status berubah menjadi "Mode cadangan". Data langsung tetap diprioritaskan begitu tersedia.
 

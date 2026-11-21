@@ -23,22 +23,27 @@
   .panel{background:var(--card);border:1px solid var(--grid);border-radius:16px;padding:18px;
     box-shadow:0 6px 24px rgba(142,29,4,.06);margin-bottom:18px}
   .searchrow{display:flex;gap:10px}
-  .searchbox{flex:1;display:flex;align-items:center;gap:10px;border:1px solid var(--grid);
-    border-radius:10px;padding:0 14px;background:#fff;transition:border-color .15s,box-shadow .15s}
+  .searchbox{flex:1;display:flex;align-items:center;gap:12px;border:1px solid var(--grid);
+    border-radius:12px;padding:0 18px;background:#fff;min-height:56px;
+    transition:border-color .15s,box-shadow .15s}
   .searchbox:focus-within{border-color:var(--red);box-shadow:0 0 0 3px rgba(192,33,5,.12)}
-  .searchbox svg{flex:none;color:var(--coral)}
-  input{border:0;outline:0;width:100%;font-size:15px;padding:13px 0;color:var(--text);background:transparent}
+  .searchbox svg{flex:none;color:var(--coral);width:19px;height:19px}
+  input{border:0;outline:0;width:100%;font-size:16px;padding:16px 0;color:var(--text);background:transparent}
   input::placeholder{color:#A9968E}
-  button{font-family:inherit;cursor:pointer}
-  #refresh{border:1px solid var(--grid);background:var(--cream);border-radius:10px;padding:0 16px;
-    font-size:13px;font-weight:700;color:var(--dark);white-space:nowrap}
+  button,select{font-family:inherit;cursor:pointer}
+  #refresh{border:1px solid var(--grid);background:var(--cream);border-radius:12px;padding:0 18px;
+    min-height:56px;font-size:13px;font-weight:700;color:var(--dark);white-space:nowrap}
   #refresh:hover{background:var(--pale);border-color:var(--coral)}
   #refresh:disabled{opacity:.55;cursor:default}
-  #showAll{border:1px solid var(--coral);background:#fff;border-radius:10px;padding:0 16px;
-    font-size:13px;font-weight:700;color:var(--dark);white-space:nowrap}
-  #showAll:hover{background:var(--pale)}
-  #showAll.active{background:var(--dark);border-color:var(--dark);color:#fff}
-  #showAll.active:hover{background:#6E1703}
+  .filters{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  .filters label{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;
+    letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  .filters select{border:1px solid var(--grid);background:#fff;border-radius:9px;
+    padding:9px 32px 9px 12px;font-size:12.5px;font-weight:600;color:var(--dark);
+    outline:0;appearance:none;-webkit-appearance:none;
+    background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23C02105' stroke-width='3'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 10px center}
+  .filters select:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(192,33,5,.10)}
   .meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px;font-size:12px}
   .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 10px;
     font-weight:700;background:#F4EEEA;color:var(--muted)}
@@ -122,7 +127,12 @@
     .sub{font-size:12.5px}
     .panel{padding:14px;border-radius:14px}
     .searchrow{gap:8px}
-    #refresh{padding:0 12px;font-size:12px}
+    .searchbox{padding:0 12px;min-height:52px}
+    input{font-size:16px;padding:14px 0}
+    #refresh{padding:0 12px;font-size:12px;min-height:52px}
+    .filters{gap:8px}
+    .filters label{width:100%;justify-content:space-between}
+    .filters select{flex:1;max-width:70%;font-size:12px}
     .meta{gap:6px}
     .badge{font-size:11px;padding:4px 8px}
     .summary{margin-left:0;width:100%;font-size:11.5px}
@@ -150,10 +160,22 @@
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path>
         </svg>
-        <input id="q" type="search" placeholder="Contoh: Anita, Dede, Meitina…" autocomplete="off" spellcheck="false">
+        <input id="q" type="search" placeholder="Cari nama SPG…" autocomplete="off" spellcheck="false">
       </label>
-      <button id="showAll" type="button">Tampilkan Semua</button>
       <button id="refresh" type="button">↻ Refresh</button>
+    </div>
+    <div class="filters">
+      <label>Region
+        <select id="region"><option value="">Semua Region</option></select>
+      </label>
+      <label>Urutkan
+        <select id="sort">
+          <option value="pct-desc">Pencapaian tertinggi</option>
+          <option value="pct-asc">Pencapaian terendah</option>
+          <option value="total-desc">Grand Total tertinggi</option>
+          <option value="name-asc">Nama A–Z</option>
+        </select>
+      </label>
     </div>
     <div class="meta">
       <span id="status" class="badge loading">Menghubungkan ke Google Sheet…</span>
@@ -166,7 +188,7 @@
 
   <footer>
     Sumber: sheet “Performa SPG” · Warna Gap: hijau = sudah melebihi target, merah = belum mencapai target (nilai tanpa tanda).<br>
-    Tekan <strong>LIHAT TOKO</strong> pada kartu SPG untuk melihat pencapaian tiap toko.
+    Gunakan filter <strong>Region</strong> dan <strong>Urutkan</strong> untuk mengatur tampilan · tekan <strong>LIHAT TOKO</strong> untuk rincian tiap toko.
   </footer>
 </main>
 
@@ -179,12 +201,12 @@
   var REFRESH_MS = 60 * 1000; // ambil data ulang tiap 1 menit
 
   // Data cadangan (snapshot awal) dipakai hanya jika Google Sheet belum bisa dijangkau.
-  var SNAPSHOT = [{"name":"Anita Mulya Audia","total":66065311,"target":31334307,"gap":-34731004,"details":[["CS001000118","HARI HARI CILEDUG MERUYA",15174011],["CS001000125","HARI HARI KALIDERES MERUYA",17508474],["CS004004813","HARI HARI BINTARO CINANGKA",33382826]]},{"name":"Asri Nurhasanah","total":0,"target":13880883,"gap":13880883,"details":[["CS004006752","JURAGAN FROZEN CINANGKA",0],["CS004008163","CENTRAL FROZEN FOOD CINANGKA",0],["JURAGAN-MRY-002","JURAGAN 2",0],["CS001000882","JURAGAN FROZEN",0]]},{"name":"Atik Maryati","total":9804503,"target":28785301,"gap":-18980798,"details":[["CS003001991","JAYA BERSAMA SUNTER",0],["CS003005986","Sumber Frozen Makmur SUNTER",4319577],["CS006003314","BAKUL BENTO NAROGONG",0],["CS006003511","TOKO SNACK CORNER NAROGONG",3296515],["CS003006134","Aura Segar",2188411]]},{"name":"Dede Siti Rosita","total":57949433,"target":38182597,"gap":-19766836,"details":[["CS004005949","TIP TOP-DEPOK",3528180],["CS004008034","AEON TANJUNG BARAT CINANGKA",10544220],["CS006003357","HARI HARI BUARAN NAROGONG",41553445],["CS006002577","UD CEMERLANG FROZEN",2323588]]},{"name":"Evi Saipina","total":12749897,"target":0,"gap":-12749897,"details":[["CS003006580","FAJAR FROZEN SUNTER",12749897]]},{"name":"Fara Dewi","total":17779308,"target":38230340,"gap":20451032,"details":[["CS004004157","ANEKA BUANA CIREUNDEU CINANGKA 2",13296612],["CS004005504","PUJASARI",4482696],["CS004006726","KBU FROZEN CINANGKA",0]]},{"name":"Lian Tie","total":16983991,"target":53252230,"gap":36268239,"details":[["CS004003461","H&G FROZEN",2330431],["CS004006806","ABE FROZEN",8440140],["CS004008254","HAPPY HARVEST SUPERMARKET SERPONG",5705928],["CS001000112","TIP TOP CIMONE",507492]]},{"name":"Lucyana Madansyah","total":32703717,"target":52682615,"gap":19978898,"details":[["CS006003535","PT FAMAY GOTO SUKSES NAROGONG",32703717],["FAMAY-JABO-002","QUEEN MART FROZEN GUNUNG PUTRI",0]]},{"name":"Meitina Anggi Ardana","total":51573559,"target":43397618,"gap":-8175941,"details":[["CS006000111","TIP TOP PONDOK GEDE",4543164],["CS006000113","TIP TOP TAMBUN",4543164],["CS006000120","HARI HARI SWALAYAN BTC",16341243],["CS006000117","HARI HARI BEKASI CYBER PARK NAROGONG",26145988]]},{"name":"Nurhasanah","total":31659120,"target":64276082,"gap":32616962,"details":[["CS006002286","SATU JAYA FOOD FROZEN",0],["CS058001892","L FROZEN CIRACAS",9838013],["CS058004189","TERMINAL AL FROZEN CIRACAS",2513684],["CS058004240","KIRANA GROSIR 2 CIRACAS",2455723],["CS058002750","SATU JAYA FOOD FROZEN",13300810],["CS058008851","TOKO BOLU BY RAFA",3550890]]},{"name":"Shinta Ayu Susanti","total":12696203,"target":38714455,"gap":26018252,"details":[["CS004003024","NADA FROZEN",0],["CS004005948","TIP TOP CIPUTAT",5050656],["CS004008029","BROTHER MEAT SHOP",7645547],["CS004007087","RAHMA FROZEN",0]]},{"name":"Irma Pertiwi","total":32818979,"target":29661548,"gap":-3157431,"details":[["CS004008037","RED BOX CINANGKA",32818979]]},{"name":"Jayanti","total":44028544,"target":45085629,"gap":1057085,"details":[["CS004004817","HARI HARI DRAMAGA BOGOR CINANGKA",38051752],["CS004008035","AEON SENTUL CITY CINANGKA",5976792],["CS004008041","ARS FROZEN FOOD CINANGKA",0],["CS006000891","ARS FROZEN FOOD",0],["CS006003376","MS.FROZEN",0],["MS-FROZEN-001","TOKO MUDAH STORE",0]]},{"name":"Maya Muhayah","total":0,"target":28790558,"gap":28790558,"details":[["CS004006771","ANDI BAKSO CINANGKA",0],["CS004006803","BAROKAH FROZEN",0]]},{"name":"Novi Kartika Sari","total":15146221,"target":38127956,"gap":22981735,"details":[["CS004003641","ANEKA FROZEN BETUNG CINANGKA",15146221]]},{"name":"Nur Hikmah","total":23022739,"target":52876707,"gap":29853968,"details":[["CS004003174","Anto Frozen Lembang",23022739],["CS004007950","Anto Frozen Kebayoran",0],["CS004007960","Anto Frozen Anyar",0],["CS004007964","Anto Frozen Sepatan",0]]},{"name":"Sendy Martini","total":26641080,"target":78074480,"gap":51433400,"details":[["CS004004158","ANEKA BUANA FATMAWATI",26641080]]},{"name":"Sri Rahayu","total":19655103,"target":38447786,"gap":18792683,"details":[["CS004008231","Aneka Frozen Serang",19655103],["ANEKA-CNK-002","Aneka Frozen Ciracas",0],["ANEKA-CNK-003","Aneka Frozen Cilegon",0]]},{"name":"Sri Rahayu Setia Ningsih","total":11459417,"target":13351501,"gap":1892084,"details":[["BNK002","OBOS FROZEN FOOD",0],["CS001002163","BENNY MART PERUM",0],["CS004002759","TYRA FRESH",2844467],["CS004007863","LOUIS FROZEN CINANGKA",3496703],["CS004007887","AZKA FROZEN CINANGKA",433752],["CS004008061","BNR FROZEN CINANGKA",4684495],["CS004008103","TOKO YANG FROZEN CINANGKA",0]]},{"name":"Styani Nur Lestari","total":36477504,"target":41028165,"gap":4550661,"details":[["CS006000112","TIP TOP RAWAMANGUN",7056360],["CS006000368","AEON JAKARTA GARDEN CITY",11783700],["CS006003316","HAPPY HARVEST SUMMARECON MALL BEKASI NAROGONG",8322264],["CS006000110","TIP TOP PD.BAMBU",9315180]]},{"name":"Susiawati","total":30806412,"target":64678855,"gap":33872443,"details":[["CS004004747","FORTUNA SWALAYAN CINANGKA 1",30806412]]},{"name":"Tina Cahya Mentari","total":17929386,"target":35020426,"gap":17091040,"details":[["CS004002764","JAKA FROZEN",5724492],["CS004007304","KARIANA FROZEN",1652590],["CS004008038","KING FROZEN DURIAN CINANGKA",10552304]]}];
+  var SNAPSHOT = [{"region":"Jabodetabek","name":"Anita Mulya Audia","total":66065311,"target":31334307,"gap":-34731004,"details":[["CS001000118","HARI HARI CILEDUG MERUYA",15174011],["CS001000125","HARI HARI KALIDERES MERUYA",17508474],["CS004004813","HARI HARI BINTARO CINANGKA",33382826]]},{"region":"Jabodetabek","name":"Asri Nurhasanah","total":0,"target":13880883,"gap":13880883,"details":[["CS004006752","JURAGAN FROZEN CINANGKA",0],["CS004008163","CENTRAL FROZEN FOOD CINANGKA",0],["JURAGAN-MRY-002","JURAGAN 2",0],["CS001000882","JURAGAN FROZEN",0]]},{"region":"Jabodetabek","name":"Atik Maryati","total":25263424,"target":28785301,"gap":3521877,"details":[["CS003001991","JAYA BERSAMA SUNTER",0],["CS003005986","Sumber Frozen Makmur SUNTER",5402587],["CS006003314","BAKUL BENTO NAROGONG",2506905],["CS006003511","TOKO SNACK CORNER NAROGONG",9805061],["CS003006134","Aura Segar",7548871]]},{"region":"Jabodetabek","name":"Dede Siti Rosita","total":71193329,"target":38182597,"gap":-33010732,"details":[["CS004005949","TIP TOP-DEPOK",5099760],["CS004008034","AEON TANJUNG BARAT CINANGKA",10544220],["CS006003357","HARI HARI BUARAN NAROGONG",53225761],["CS006002577","UD CEMERLANG FROZEN",2323588]]},{"region":"Jabodetabek","name":"Evi Saipina","total":12749897,"target":0,"gap":-12749897,"details":[["CS003006580","FAJAR FROZEN SUNTER",12749897]]},{"region":"Jabodetabek","name":"Fara Dewi","total":32609241,"target":36297852,"gap":3688611,"details":[["CS004004157","ANEKA BUANA CIREUNDEU CINANGKA 2",20810856],["CS004005504","PUJASARI",7265676],["CS004008468","KBU FROZEN CINANGKA",4532709]]},{"region":"Jabodetabek","name":"Lian Tie","total":16983991,"target":39757646,"gap":22773655,"details":[["CS004003461","H&G FROZEN",2330431],["CS004006806","ABE FROZEN",8440140],["CS004008254","HAPPY HARVEST SUPERMARKET SERPONG",5705928],["CS001000112","TIP TOP CIMONE",507492]]},{"region":"Jabodetabek","name":"Lucyana Madansyah","total":32703717,"target":52682615,"gap":19978898,"details":[["CS006003535","PT FAMAY GOTO SUKSES NAROGONG",32703717],["FAMAY-JABO-002","QUEEN MART FROZEN GUNUNG PUTRI",0]]},{"region":"Jabodetabek","name":"Meitina Anggi Ardana","total":51573559,"target":43397618,"gap":-8175941,"details":[["CS006000111","TIP TOP PONDOK GEDE",4543164],["CS006000113","TIP TOP TAMBUN",4543164],["CS006000120","HARI HARI SWALAYAN BTC",16341243],["CS006000117","HARI HARI BEKASI CYBER PARK NAROGONG",26145988]]},{"region":"Jabodetabek","name":"Nurhasanah","total":32063664,"target":50000000,"gap":17936336,"details":[["CS058001892","L FROZEN CIRACAS",9838013],["CS058004189","TERMINAL AL FROZEN CIRACAS",2513684],["CS058004240","KIRANA GROSIR 2 CIRACAS",2455723],["CS058002750","SATU JAYA FOOD FROZEN",13300810],["CS058008851","TOKO BOLU BY RAFA",3955434]]},{"region":"Jabodetabek","name":"Shinta Ayu Susanti","total":16731875,"target":42154957,"gap":25423082,"details":[["CS004003024","NADA FROZEN",0],["CS004005948","TIP TOP CIPUTAT",9086328],["CS004008029","BROTHER MEAT SHOP",7645547],["CS004007087","RAHMA FROZEN",0]]},{"region":"Jabodetabek","name":"Irma Pertiwi","total":49015998,"target":59323095,"gap":10307097,"details":[["CS004008037","RED BOX CINANGKA",49015998]]},{"region":"Jabodetabek","name":"Jayanti","total":45728104,"target":49009677,"gap":3281573,"details":[["CS004004817","HARI HARI DRAMAGA BOGOR CINANGKA",38051752],["CS004008035","AEON SENTUL CITY CINANGKA",7676352],["CS004008041","ARS FROZEN FOOD CINANGKA",0],["CS006000891","ARS FROZEN FOOD",0],["CS006003376","MS.FROZEN",0],["MS-FROZEN-001","TOKO MUDAH STORE",0]]},{"region":"Jabodetabek","name":"Maya Muhayah","total":22801344,"target":30000000,"gap":7198656,"details":[["CS004006771","ANDI BAKSO CINANGKA",22801344],["CS004006803","BAROKAH FROZEN",0]]},{"region":"Jabodetabek","name":"Novi Kartika Sari","total":15146221,"target":38127956,"gap":22981735,"details":[["CS004003641","ANEKA FROZEN BETUNG CINANGKA",15146221]]},{"region":"Jabodetabek","name":"Nur Hikmah","total":23022739,"target":52876707,"gap":29853968,"details":[["CS004003174","Anto Frozen Lembang",23022739],["CS004007950","Anto Frozen Kebayoran",0],["CS004007960","Anto Frozen Anyar",0],["CS004007964","Anto Frozen Sepatan",0]]},{"region":"Jabodetabek","name":"Sendy Martini","total":47881764,"target":78074480,"gap":30192716,"details":[["CS004004158","ANEKA BUANA FATMAWATI",47881764]]},{"region":"Jabodetabek","name":"Sri Rahayu","total":54174701,"target":38447786,"gap":-15726915,"details":[["CS004008231","Aneka Frozen Serang",54174701],["ANEKA-CNK-002","Aneka Frozen Ciracas",0],["ANEKA-CNK-003","Aneka Frozen Cilegon",0]]},{"region":"Jabodetabek","name":"Sri Rahayu Setia Ningsih","total":15868627,"target":13351501,"gap":-2517126,"details":[["BNK002","OBOS FROZEN FOOD",0],["CS001002163","BENNY MART PERUM",0],["CS004002759","TYRA FRESH",2844467],["CS004007863","LOUIS FROZEN CINANGKA",7430185],["CS004007887","AZKA FROZEN CINANGKA",909480],["CS004008061","BNR FROZEN CINANGKA",4684495],["CS004008103","TOKO YANG FROZEN CINANGKA",0]]},{"region":"Jabodetabek","name":"Styani Nur Lestari","total":43296156,"target":41028165,"gap":-2267991,"details":[["CS006000112","TIP TOP RAWAMANGUN",12205224],["CS006000368","AEON JAKARTA GARDEN CITY",11783700],["CS006003316","HAPPY HARVEST SUMMARECON MALL BEKASI NAROGONG",9992052],["CS006000110","TIP TOP PD.BAMBU",9315180]]},{"region":"Jabodetabek","name":"Susiawati","total":43214892,"target":64678855,"gap":21463963,"details":[["CS004004747","FORTUNA SWALAYAN CINANGKA 1",43214892]]},{"region":"Jabodetabek","name":"Tina Cahya Mentari","total":30501636,"target":35020426,"gap":4518790,"details":[["CS004002764","JAKA FROZEN",13239346],["CS004007304","KARIANA FROZEN",2556473],["CS004008038","KING FROZEN DURIAN CINANGKA",14705817]]},{"region":"Bali","name":"Gusti Agung Ratna Dewi","total":18940378,"target":72014701,"gap":53074323,"details":[["WJES-002","ANEKA SOSIS SURAPATI",0],["CS032000008","CV AGROBIS DEWATA FOODMART",665188],["CS032000661","DOLPIN MART",2574485],["CS032000016","KEMBANG SARI ARTA",1984296],["CS032000017","KEMBANG SARI ARTA 5",0],["CS032000018","KEMBANG SARI ARTA III",1365000],["CS032000019","KEMBANG SARI ARTA IV",1252120],["CS032001230","MUTIA FROZEN SINGARAJA",3025776],["CS032000052","PT ARTA SEDANA SINGARAJA SINGARAJA 2",2064680],["CS032000051","PT ARTA SEDANA SINGARAJA",898774],["CS032001806","THE CEMIL SS FROZEN",314150],["WJES-001","TOKO SOSISQU",0],["RP0324","WIJAYA FROZEN",0],["CS032000079","PT WIJES FROZEN FOOD",4795909]]},{"region":"Bali","name":"Indah Fajriyanti","total":6895367,"target":40561077,"gap":-33665710,"details":[["","GARRY FROZEN FOOD AHMAD YANI",0],["","GARRY FROZEN FOOD GAJAH MADA",0],["","GARRY FROZEN FOOD ULAKAN",0],["CS034001077","KRISNA UD",2565780],["CBG-045581","TOKO GARRYS BANDEM",0],["CS034000623","PT. ELTAGA PANGAN SOLUSINDO",4329587],["RP0382","PT.ELTAGA PANGAN SOLUSINDO",0]]},{"region":"Bali","name":"Ni Kadek Yuliyana","total":34213423,"target":36622191,"gap":-2408768,"details":[["CS031000460","BINTANG SUPERMARKET DENPASAR 2",4671921],["CS031000225","CV PANDE PUTRI BATUR",810348],["CS031000226","CV PANDE PUTRI BUYAN",2128186],["CS031000228","CV PANDE PUTRI RENON",1043433],["CS031000227","CV PANDE PUTRI TIRTA",1077363],["FRSH-BALI-002","FRESHINDO SANGLAH",0],["FRSH-BALI-001","FRESHINDO YEH AYA",0],["CS031000125","PT. AYU SUKSES MAKMUR",0],["CS031000232","SUAR COLLECTION",2025165],["RP0050","TOKO INDOSOSIS DENPASAR",0],["CS031000146","FRESHINDO",22457007]]},{"region":"Bali","name":"Ni Kadek Yuniartini","total":30283670,"target":82659281,"gap":-52375611,"details":[["SALAM-DPS-004","CV. SOSIS SALAM BERKAH DALUNG",0],["SALAM-DPS-002","CV. SOSIS SALAM BERKAH GIANYAR",0],["SALAM-DPS-003","CV. SOSIS SALAM BERKAH TABANAN",0],["SALAM-DPS-001","CV. SOSIS SALAM BERKAH TUBAN",0],["CS031000195","SOSIS SALAM BERKAH",29343845],["RP0251","CV.SOSIS SALAM BERKAH",0],["CS031000461","BINTANG SUPERMARKET",939825]]},{"region":"Bali","name":"Ni Made Cintya Rahayu Putri","total":0,"target":488455252,"gap":-488455252,"details":[["WJES-005","ANEKA SOSIS LOMBOK",0],["NIAGA-DPS-001","CV. Niaga Multi Ritel Adisucipto",0],["NIAGA-DPS-002","CV. NIAGA MULTI RITEL DENPASAR",0],["LA0040","HAIFA SOSIS",0],["LA0056","KING FROZEN",0],["LA0062","MAAT FROZEN",0],["LA0081","PT. RUBY STRAINDO",0],["LA0340","YAYA FROZEN",0],["RP0337","CV.LINGSAR ARTHA MULIA",0]]},{"region":"Bali","name":"Ni Wayan Sumaniti","total":22166753,"target":25461589,"gap":3294836,"details":[["CS033000340","ALKAUTSAR TK SOSIS",2107158],["CS033000520","BALI BAGUS BONGAN",3266824],["CS033000121","CV DHARMA WIJAYA SEJAHTERA",2031189],["CS033000101","DWITA GROSIR",3396148],["CS033000244","KOP PEGAWAI BINA SEJAHTERA",813296],["CS033001066","LAIS FORZEN",4641957],["CS033001203","MURNI KAPAL",896978],["CS033000141","PT SUMBER AGRI SEHAT KAPAL 1",586368],["CS033000143","PT SUMBER AGRI SEHAT KAPAL 2",2695208],["CS033000140","PT SUMBER AGRI SEHAT KAPAL 3",0],["CS033000281","ADI JAYA",466302],["CS033000283","ADI JAYA",1265325]]},{"region":"Jawa Barat","name":"Dyan Fatikah Rahayu","total":59622792,"target":95972105,"gap":-36349313,"details":[["BAROKAH-SBY-006","BAROKAH CILIMUS",0],["BAROKAH-SBY-009","BAROKAH KUNINGAN",0],["BAROKAH-SBY-007","BAROKAH SULTAN AGENG",0],["CS061006327","PT. PRIMA NANJUNG SEJATI",59622792],["CS061006328","PT. KELOLA PANGAN NUSANTARA",0]]},{"region":"Jawa Barat","name":"Lariska Rachtia Alamsyah","total":137318133,"target":52367191,"gap":-84950942,"details":[["CS061000475","PT.MULYA RAHAYU PRATAMA BANDUNG 1",98952860],["CS061000249","PT.MULYA RAHAYU PRATAMA",0],["CS061000474","PT.LANGLANG BUANA PERKASA",38365273],["CS06101041","TSB CIKURUBUK",0]]},{"region":"Jawa Barat","name":"Nenden Desy Arisandy","total":38569529,"target":60996294,"gap":-22426765,"details":[["CS061000454","CIMAHI FROZEN FOOD",2338123],["CS061000200","MINE SOSIS BAKSO ANTAPANI",0],["CS06101080","MINE SOSIS BASO MARGAHAYU",21215470],["CS061006333","ZET CULINARY",15015936]]},{"region":"Jawa Barat","name":"Rani Santika","total":0,"target":52367191,"gap":-52367191,"details":[["RSB-BDG-005","RSB BANJARAN",0],["RSB-BDG-018","RSB CICALENGKA",0],["RSB-BDG-016","RSB RENCONG",0],["RSB-BDG-019","RSB SOREANG",0]]},{"region":"Jawa Barat","name":"Sherly Marshelyna","total":0,"target":52367191,"gap":-52367191,"details":[["RSB-BDG-001","RSB CIJERAH",0],["RSB-BDG-002","RSB CIMAHI",0],["RSB-BDG-004","RSB PADALARANG",0],["RSB-BDG-003","RSB PERMATA",0]]},{"region":"Jawa Barat","name":"Wawat Setiawati","total":0,"target":52367191,"gap":-52367191,"details":[["RSB-BDG-009","RSB CIKUTRA",0],["RSB-BDG-011","RSB LEMBANG",0],["RSB-BDG-007","RSB MARGACINTA",0],["RSB-BDG-008","RSB UJUNG BERUNG",0]]},{"region":"Jawa Tengah","name":"Alvi Aulia Rahma","total":63203819,"target":99371587,"gap":36167768,"details":[["CS073005452","LANGGENG FOOD BOJA SEMARANG",63203819]]},{"region":"Jawa Tengah","name":"Faradila Edityastiti","total":14095692,"target":15584916,"gap":-1489224,"details":[["CS071000019","MANNA KAMPUS SUPENO",439776],["CS071000535","PAMELLA",6247656],["CS071000532","PAMELLA 6",5740164],["CS071000342","PT. KREASI LOKA GEMILANG",0],["CS071000445","PURNAMA BANTUL",1668096]]},{"region":"Jawa Tengah","name":"Heddyarnie Sri Pamekas Gusti","total":10229143,"target":6798156,"gap":3430987,"details":[["CS074006315","CV HANNA MAKMUR SENTOSA KARANG KOBAR PURWOKERTO",850154],["CS074003424","HANNA MEAT SHOP PURWOKERTO",0],["CS074002475","PERSEROAN KOMANDITER CITRA BUAH SEGAR",0],["CS074002052","RITA I ISOLA",492267],["CS074002132","RITA L",8886722],["CS074002050","RITA PURWOKERTO (A) PURWOKERTO",0]]},{"region":"Jawa Tengah","name":"Sri Kusnita","total":4780326,"target":21962859,"gap":-17182533,"details":[["CS076004536","BP HARTOYO TEGAL",0],["CS076005439","LOK LOK POJOK TEGAL",0],["CS076001728","MUTIARA CAHAYA MALL SLAWI TEGAL",885258],["CS076001727","MUTIARA CAHAYA MEJASEM TEGAL",0],["CS076001729","MUTIARA CAHAYA SLAWI 1",422910],["CS076007796","MUTIARA CAHAYA TEGAL 10 TEGAL",507492],["CS076002080","PT. RITA RITELINDO TEGAL",954998],["CS076002103","TOSERBA YOGYA SLAWI",1004834],["CS076002105","TOSERBA YOGYA TEGAL",1004834]]},{"region":"Jawa Timur","name":"Dwin Inda Purwanti Setiani","total":60207009,"target":150000000,"gap":-89792991,"details":[["BAROKAH-SBY-001","BAROKAH PLOSO",0],["CS011001314","CV.BAROKAH SEJAHTERA GRUP",60207009],["BAROKAH-SBY-002","RIMEL SUB AGEN BAROKAH",0]]},{"region":"Jawa Timur","name":"Erin Aryantik","total":29210237,"target":65000000,"gap":-35789763,"details":[["BERKAT-JATIM-001","Berkat - Yulia Frozen Food Candi",0],["CS024002143","CV BERKAT SANG PENCIPTA",14150567],["CS012000668","CV JAYA ANUGRAH SINGOSARI",0],["CS024002800","DUTA MANDIRI SEJAHTERA BERSAMA SINGOSARI",0],["CS011009649","DUTA MANDIRI SEJAHTERA BERSAMA SURABAYA",15059670],["CS024002657","MISTER MURA FROZEN FOOD SINGOSARI",0],["CS011004585","MISTER MURAH SURABAYA",0]]},{"region":"Jawa Timur","name":"Inggit Duhita Trirara","total":6016290,"target":30000000,"gap":23983710,"details":[["CS013000073","CV JEMBER ROXY SQUARE",2174594],["CS013000212","CV ROXY SUPERMARKET SITUBONDO",3841696],["CS013005069","DAYITA FROZEN JEMBER",0],["CS013004854","DAYITA FROZEN",0],["CS013002824","NABILA FOOD",0]]},{"region":"Jawa Timur","name":"Irawati","total":35686795,"target":52000000,"gap":16313205,"details":[["CS011002524","FEBRI FROZEN",10753657],["CS011002716","GRIYA BAROKAH FOOD",0],["CS011004510","METRO FROZEN-SAIFUL",7009384],["ORIENT-SBY-001","Orient Frozen Food [Lidah Kulon]",0],["CS011005334","PT.BILKA",3761412],["CS011006174","SALSABILA FROZEN",8399041],["CS011008203","SO DELISH",0],["CS011001904","CV.ORIENT FROZEN FOO",3371516],["CS011005358","PT.PALAPA MEGA GALAKSI",1894443],["CS021000023","PT MEGA SEPANJANG PERMAI SIDOARJO",497342],["CS011004121","LULUK FROZEN",0]]},{"region":"Jawa Timur","name":"Kutmiati","total":36175686,"target":55000000,"gap":-18824314,"details":[["CS011001557","BONNET",11452076],["CS011001622","CAFE FROZEN",10821187],["CS011004107","LUCKY FROZEN SURABAYA",13902423],["LUCKY-SBY-001","LUCKY FROZEN SURABAYA 2 BENOWO",0],["CS011006812","SUKAMTO",0],["CS021006840","TOKO SUKAMTO",0]]},{"region":"Jawa Timur","name":"Rizka Herlinda Indrawati","total":45644937,"target":60000000,"gap":14355063,"details":[["CS021006818","CV.ARIDA MAKMUR SEJAHTERA SIDOARJO",26574106],["CS021006820","CV.SHANOURA FOOD GROUP SIDOARJO",4361374],["CS011008876","PT.SAMUDRA SUKSES MANDIRI",4986628],["CS011009341","PT.SAMUDRA SUKSES MANDIRI SURABAYA",9722829]]},{"region":"Jawa Timur","name":"Sausan Afrari","total":46192647,"target":145000000,"gap":-98807353,"details":[["CS011001893","CV.KEOTO SARIROGO GE",46192647],["KEVIN-SDA-004","KEVIN BLURU",0],["KEVIN-SDA-003","KEVIN KARAH",0],["KEVIN-SDA-001","KEVIN SIDODADI",0],["KEVIN-SDA-007","KEVIN TAMAN",0]]},{"region":"Jawa Timur","name":"Ulil Azmi Permatasari","total":55330554,"target":150000000,"gap":94669446,"details":[["CS020001532","CV. SEMBILAN FROZEN PASURUAN",13844297],["CS011001848","CV. SEMBILAN FROZEN",41486257]]},{"region":"Jawa Timur","name":"Yulia Dwi Jayanti","total":24011456,"target":52000000,"gap":-27988544,"details":[["CS011001136","BANDAR FROZEN",4239143],["CS011001864","CV. Z3",14565456],["CS021003196","LAFAREL FROZEN FOOD SIDOARJO",5206857],["CS011005423","PUPUT WULANDARI",0]]},{"region":"Tanpa Region","name":"Prima Lia Jayanti","total":0,"target":0,"gap":0,"details":[["ARGLMP-0001","CHANDRA LAMPUNG CITY MALL",0],["ARG013","Chandra Superstor Enggal",0],["ARG016","Chandra Superstor Kedamain",0],["ARG011","Chandra Superstor Kemiling",0],["ARG015","Chandra Superstor Mall Boemi Kedaton",0],["ARG009","Chandra Superstor Natar",0],["ARG006","Chandra Superstor Tanjung Karang",0],["ARG012","Chandra Superstor Teluk",0],["ARG001","Chandra Superstore Antasari Lampung",0],["ARG004","Chandra Superstore Way Halim Lampung",0]]},{"region":"Tanpa Region","name":"Sevanya Leoni Puteri Desela","total":0,"target":0,"gap":0,"details":[["ZASGO-004","ZASGO MART COWANG DERENG",0],["ZASGO-001","ZASGO MART KAMPUNG UJUNG",0],["ZASGO-003","ZASGO MART LABUAN SQUARE",0]]}];
 
   var $ = function(id){ return document.getElementById(id); };
   var qInput = $('q'), results = $('results'), statusEl = $('status'),
       updateEl = $('update'), summaryEl = $('summary'), refreshBtn = $('refresh'),
-      showAllBtn = $('showAll');
+      regionSel = $('region'), sortSel = $('sort');
 
   var data = normalize(SNAPSHOT);
   var updateLabel = '19 Nov';
@@ -195,6 +217,7 @@
   function normalize(rows){
     return rows.map(function(x){
       return {
+        region: x.region || 'Tanpa Region',
         name: x.name,
         total: Number(x.total) || 0,
         target: Number(x.target) || 0,
@@ -221,14 +244,20 @@
     }
     var update = String(val(rows[0], 1) || '').trim();
     var map = new Map();
+    var regionByName = new Map();
 
     rows.slice(2).forEach(function(row){
       var name = String(val(row, 1) || '').trim().replace(/\s+/g, ' ');
       if (!name || name.toLowerCase() === 'nama spg') return;
-      var d = map.get(name);
+      var rawRegion = String(val(row, 0) || '').trim();
+      if (rawRegion) regionByName.set(name, rawRegion);
+      var region = regionByName.get(name) || rawRegion || 'Tanpa Region';
+      var key = region + '||' + name;
+      var d = map.get(key);
       if (!d){
-        d = { name: name, total: 0, target: 0, gap: null, hasTotal: false, hasGap: false, details: [] };
-        map.set(name, d);
+        d = { region: region, name: name, total: 0, target: 0, gap: null,
+              hasTotal: false, hasGap: false, details: [] };
+        map.set(key, d);
       }
       d.details.push({
         code: String(val(row, 2) || '').trim(),
@@ -258,6 +287,22 @@
   function setStatus(text, kind){
     statusEl.textContent = text;
     statusEl.className = 'badge' + (kind ? ' ' + kind : '');
+  }
+
+  function pctOf(x){
+    return x.target > 0 ? Math.round(x.total / x.target * 100) : null;
+  }
+
+  function populateRegions(){
+    var regs = [];
+    data.forEach(function(x){ if (regs.indexOf(x.region) < 0) regs.push(x.region); });
+    regs.sort(function(a, b){ return a.localeCompare(b, 'id'); });
+    var current = regionSel.value;
+    var html = '<option value="">Semua Region</option>' + regs.map(function(r){
+      return '<option value="' + esc(r) + '">' + esc(r) + '</option>';
+    }).join('');
+    regionSel.innerHTML = html;
+    regionSel.value = regs.indexOf(current) >= 0 ? current : '';
   }
 
   function loadSheet(){
@@ -292,6 +337,7 @@
         var parsed = parseResponse(res);
         data = parsed.spg;
         if (parsed.update) updateLabel = parsed.update;
+        populateRegions();
         setStatus('Data langsung dari Google Sheet', 'ok');
         render();
       } catch (e) {
@@ -347,15 +393,14 @@
     var raw = qInput.value;
     var needle = norm(raw);
     var hasQuery = needle !== '';
+    var region = regionSel.value;
 
-    showAllBtn.classList.toggle('active', showAll);
-    showAllBtn.textContent = showAll ? 'Sembunyikan Semua' : 'Tampilkan Semua';
     updateEl.textContent = 'Update sheet: ' + (updateLabel || '–');
 
     if (!hasQuery && !showAll){
       summaryEl.textContent = data.length + ' SPG tersedia';
       results.innerHTML = '<div class="prompt"><h2>Cari performa SPG</h2>' +
-        '<p>Ketik nama SPG pada kolom pencarian,<br>atau tampilkan seluruh performa SPG sekaligus.</p>' +
+        '<p>Ketik nama SPG, pilih Region, atau tampilkan seluruh performa SPG sekaligus.</p>' +
         '<button type="button" data-action="showall">TAMPILKAN SEMUA SPG</button></div>';
       return;
     }
@@ -363,11 +408,26 @@
     var list = hasQuery
       ? data.filter(function(x){ return norm(x.name).indexOf(needle) !== -1; })
       : data.slice();
-    list.sort(function(a, b){ return b.total - a.total || a.name.localeCompare(b.name); });
+    if (region) list = list.filter(function(x){ return x.region === region; });
+
+    var sort = sortSel.value;
+    list.sort(function(a, b){
+      var pa = pctOf(a), pb = pctOf(b);
+      if (sort === 'pct-desc' || sort === 'pct-asc'){
+        if (pa == null && pb == null) return b.total - a.total;
+        if (pa == null) return 1;
+        if (pb == null) return -1;
+        var diff = sort === 'pct-desc' ? pb - pa : pa - pb;
+        return diff || b.total - a.total;
+      }
+      if (sort === 'total-desc') return b.total - a.total || a.name.localeCompare(b.name);
+      return a.name.localeCompare(b.name);
+    });
 
     var combined = list.reduce(function(s, x){ return s + x.total; }, 0);
     var targetCombined = list.reduce(function(s, x){ return s + (x.target || 0); }, 0);
-    summaryEl.textContent = list.length + ' SPG · total ' + fmt(combined) + ' · target ' + fmt(targetCombined);
+    summaryEl.textContent = list.length + ' SPG' + (region ? ' · ' + region : '') +
+      ' · total ' + fmt(combined) + ' · target ' + fmt(targetCombined);
 
     if (!list.length){
       results.innerHTML = '<div class="empty"><strong>Tidak ada SPG ditemukan</strong>Coba kata kunci lain, misalnya nama depan SPG.</div>';
@@ -375,7 +435,7 @@
     }
 
     results.innerHTML = list.map(function(x, i){
-      var pct = x.target > 0 ? Math.round(x.total / x.target * 100) : null;
+      var pct = pctOf(x);
       var width = pct == null ? 0 : Math.min(100, Math.max(0, pct));
       var gapClass = x.gap == null ? 'zero' : (x.gap < 0 ? 'good' : (x.gap > 0 ? 'bad' : 'zero'));
       var detailId = 'toko-' + i;
@@ -387,7 +447,7 @@
         '<div class="card-main">' +
           '<div class="avatar">' + esc(initials(x.name)) + '</div>' +
           '<div class="who"><div class="name">' + highlight(x.name, raw) + '</div>' +
-          '<div class="small">' + x.details.length + ' toko' +
+          '<div class="small">' + esc(x.region) + ' · ' + x.details.length + ' toko' +
           (pct == null ? '' : ' · <span class="pct' + (pct >= 100 ? ' good' : '') + '">' + pct + '% dari target</span>') +
           '</div>' +
           '<button class="store-btn" type="button" aria-expanded="false" aria-controls="' + detailId + '">' +
@@ -407,16 +467,29 @@
     }).join('');
   }
 
-  qInput.addEventListener('input', render);
+  qInput.addEventListener('input', function(){
+    if (qInput.value.trim()) showAll = false;
+    render();
+  });
   refreshBtn.addEventListener('click', loadSheet);
-  showAllBtn.addEventListener('click', function(){
-    if (showAll){ showAll = false; }
-    else { qInput.value = ''; showAll = true; }
+  regionSel.addEventListener('change', function(){
+    qInput.value = '';
+    showAll = true;
+    render();
+  });
+  sortSel.addEventListener('change', function(){
+    if (!qInput.value.trim() && !showAll) showAll = true;
     render();
   });
   results.addEventListener('click', function(e){
     var show = e.target.closest('[data-action="showall"]');
-    if (show){ qInput.value = ''; showAll = true; render(); return; }
+    if (show){
+      qInput.value = '';
+      regionSel.value = '';
+      showAll = true;
+      render();
+      return;
+    }
     var btn = e.target.closest('.store-btn');
     if (!btn) return;
     var card = btn.closest('.card');
@@ -430,6 +503,7 @@
     if (!document.hidden && Date.now() - lastFetch > REFRESH_MS) loadSheet();
   });
 
+  populateRegions();
   render();
   loadSheet();
   setInterval(loadSheet, REFRESH_MS);
